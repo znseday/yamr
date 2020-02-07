@@ -2,5 +2,3 @@
 hw_14 for OTUS
 
 The task description is in 'Task_yamr.pdf'
-
-Test ci skip
