@@ -12,8 +12,6 @@
 #include <thread>
 #include <ctime>
 #include <sstream>
-#include <condition_variable>
-#include <iostream>
 #include <queue>
 #include <thread>
 #include <future>
@@ -26,33 +24,67 @@
 #define MY_P_FUNC __PRETTY_FUNCTION__
 #endif
 
-#if ((defined NDEBUG) || (defined _NDEBUG))
-#define MY_DEBUG_ONLY(x)
-#else
-#define MY_DEBUG_ONLY(x) (x)
-#endif
+extern bool IsDebugOutput;
 
-void TestFile(const char *file_name);
-//-----------------------------------------------
-
-extern std::mutex console_m;
-
-//using args = std::tuple<
-////        std::function<void(const std::string &, const std::string &)>,
-//        std::future<void>
-//        >;
-
-
-//using args = std::function<void(CommandsType)>;
-
-//using args = std::future<void(CommandBlocksType)>;
-
-//using args = std::tuple<
-//        std::function<void(void)>,
-//        CommandBlocksType &
-//        >;
+#define MY_DEBUG_ONLY(x) { if(IsDebugOutput) {x}  }
 
 //-----------------------------------------------
+
+class Reducer
+{
+private:
+    static size_t Number; // = 0;
+    size_t n;
+    std::vector<std::string> Res;
+public:
+    Reducer()
+    {
+        n = ++Number;
+    }
+
+    void operator()(const std::string &s)
+    {
+        Res.emplace_back(s);
+    }
+
+    ~Reducer()
+    {
+        std::stringstream ss;
+        ss << n << ".txt";
+        std::ofstream f(ss.str());
+        for (const auto &s : Res)
+            f << s << std::endl;
+        f.close();
+    }
+};
+
+
+class Yamr
+{
+private:
+    std::string fn;
+    size_t M;
+    size_t R;
+
+    std::vector<std::size_t> SectionsInfo;
+
+    std::vector<std::vector<std::string>> SectionsData;
+
+    std::vector<std::vector<std::string>> DataForReducers;
+
+public:
+    Yamr(const std::string _fn, int _M, int _N);
+
+    void Split();
+
+    void Map();
+
+    void Shuffle();
+
+    void Reduce();
+};
+
+
 
 
 
