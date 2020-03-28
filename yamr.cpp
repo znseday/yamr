@@ -121,17 +121,16 @@ void Yamr::Map(/*const*/ mr_type &mapper) // нужен ли const?
 
             m.unlock();
 
-            for (size_t i = 0; i < M; i++)
-                for (const auto &s : SectionsDataTemp[i])
-                {
-                    vector<string> res = mapper(s);
+            for (const auto &s : SectionsDataTemp[i])
+            {
+                vector<string> res = mapper(s);
 
-                    sort(res.begin(), res.end()); // is it ok to do like that in a thread /w mutex ???
+                sort(res.begin(), res.end()); // is it ok to do like that in a thread /w mutex ???
 
-                    MY_DEBUG_ONLY(
-                        for(const auto &s : res) {  m_console.lock(); cout << "Mapper [" << i << "] res: " << s << endl; m_console.unlock();}
-                                 )
-                }
+                MY_DEBUG_ONLY(
+                    for(const auto &s : res) {  m_console.lock(); cout << "Mapper [" << i << "] res: " << s << endl; m_console.unlock();}
+                             )
+            }
 
             //sort(SectionsDataTemp[i].begin(), SectionsDataTemp[i].end()); // is it ok to do like that in a thread ???
 
