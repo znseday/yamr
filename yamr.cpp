@@ -145,15 +145,15 @@ void Yamr::Map(/*const*/ mr_type &mapper) // нужен ли const?
     for (auto t : ts)
         delete t;
 
-    SectionsData = move(SectionsDataTemp);
+//    SectionsData = move(SectionsDataTemp);
 
-    MY_DEBUG_ONLY( cout << "SectionsData.size() = " << SectionsData.size() << endl; )
+//    MY_DEBUG_ONLY( cout << "SectionsData.size() = " << SectionsData.size() << endl; )
 
-    MY_DEBUG_ONLY(
-    for (size_t i = 0; i < M; i++)
-        for (const auto &s : SectionsData[i])
-            cout << "Section " << i << ": " << s << endl;
-    )
+//    MY_DEBUG_ONLY(
+//    for (size_t i = 0; i < M; i++)
+//        for (const auto &s : SectionsData[i])
+//            cout << "Section " << i << ": " << s << endl;
+//    )
 
 }
 //--------------------------------------------------------------
