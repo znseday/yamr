@@ -15,6 +15,7 @@
 #include <queue>
 #include <thread>
 #include <future>
+#include <atomic>
 
 
 // __FUNCSIG__ is for VS, but Qt (mingw) works with __PRETTY_FUNCTION__
@@ -30,34 +31,39 @@ extern bool IsDebugOutput;
 
 //-----------------------------------------------
 
-class Reducer
-{
-private:
-    static size_t Number; // = 0;
-    size_t n;
-    std::vector<std::string> Res;
-public:
-    Reducer()
-    {
-        n = ++Number;
-    }
+//class Reducer
+//{
+//private:
+//    static size_t Number; // = 0;
+//    size_t n;
+//    std::vector<std::string> Res;
 
-    void operator()(const std::string &s)
-    {
-        Res.emplace_back(s);
-    }
+//public:
+//    Reducer()
+//    {
+//        n = ++Number;
+//    }
 
-    ~Reducer()
-    {
-        std::stringstream ss;
-        ss << n << ".txt";
-        std::ofstream f(ss.str());
-        for (const auto &s : Res)
-            f << s << std::endl;
-        f.close();
-    }
-};
+//    void operator()(const std::string &s)
+//    {
+//        Res.emplace_back(s);
+//    }
 
+//    ~Reducer()
+//    {
+//        std::stringstream ss;
+//        ss << n << ".txt";
+//        std::ofstream f(ss.str());
+//        for (const auto &s : Res)
+//            f << s << std::endl;
+//        f.close();
+//    }
+//};
+
+
+//using reducer_type = decltype([](const std::string &)->std::vector<std::string>{return std::vector<std::string>{};});
+
+using mr_type = std::function<std::vector<std::string>(const std::string &)>;
 
 class Yamr
 {
@@ -66,22 +72,26 @@ private:
     size_t M;
     size_t R;
 
+    std::mutex m_console;
+
     std::vector<std::size_t> SectionsInfo;
 
     std::vector<std::vector<std::string>> SectionsData;
 
     std::vector<std::vector<std::string>> DataForReducers;
 
+    std::atomic_size_t FileNumber = 0;
+
 public:
     Yamr(const std::string _fn, int _M, int _N);
 
     void Split();
 
-    void Map();
+    void Map(/*const*/ mr_type &); // нужен ли const?
 
-    void Shuffle();
+    //void Shuffle();
 
-    void Reduce();
+    void Reduce(/*const*/ mr_type &); // нужен ли const?
 };
 
 

@@ -35,22 +35,29 @@ int main(int argc, const char **argv)
         IsDebugOutput = true;
 
     MY_DEBUG_ONLY(cout << "fn = " << fn << endl;)
-    MY_DEBUG_ONLY(cout << "M = " << M << endl;)
-    MY_DEBUG_ONLY(cout << "R = " << R << endl;)
+    MY_DEBUG_ONLY(cout << "M = "  << M << endl;)
+    MY_DEBUG_ONLY(cout << "R = "  << R << endl;)
 
     Yamr yamr(fn, M, R);
 
     yamr.Split();
     MY_DEBUG_ONLY(cout << "Splitting's done" << endl;)
 
-    yamr.Map();
+    mr_type mapper = [](const string &str) -> vector<string>
+    {
+        vector<string> res;
+        res.emplace_back(str);
+        return res; // этот маппер пока просто заглушка - возвращает вектор из одной строки - исходной строки
+    };
+
+    yamr.Map(mapper);
     MY_DEBUG_ONLY(cout << "Mapping's done" << endl;)
 
-    yamr.Shuffle();
-    MY_DEBUG_ONLY(cout << "Shuffling's done" << endl;)
+    //yamr.Shuffle();
+    //MY_DEBUG_ONLY(cout << "Shuffling's done" << endl;)
 
-    yamr.Reduce();
-    MY_DEBUG_ONLY(cout << "Reducing's done" << endl;)
+    //yamr.Reduce();
+   //MY_DEBUG_ONLY(cout << "Reducing's done" << endl;)
 
     cout << "Done." << endl;
     return 0;
