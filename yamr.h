@@ -92,11 +92,9 @@ public:
 
     void Split();
 
-    void Map(/*const*/ mr_type &); // нужен ли const?
+    void Map(const mr_type &); // нужен ли const?
 
-
-
-    void Reduce(/*const*/ mr_type &); // нужен ли const?
+    void Reduce(const mr_type &); // нужен ли const?
 };
 
 

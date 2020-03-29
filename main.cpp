@@ -43,14 +43,14 @@ int main(int argc, const char **argv)
     yamr.Split();
     MY_DEBUG_ONLY(cout << "Splitting's done" << endl;)
 
-    string mapper_condition;
+//    string mapper_condition;
 
 //    mr_type mapper = [mapper_condition](const string &str) -> vector<string>
 //    {
 //       return vector<string>(1, str); // этот маппер пока просто заглушка - возвращает вектор из одной строки - исходной строки
 //    };
 
-    mr_type mapper = [mapper_condition] (const string &str) mutable -> vector<string>
+    mr_type mapper = [/*mapper_condition*/] (const string &str) mutable -> vector<string>
     {
         vector<string> res;
         res.reserve(str.length());
@@ -63,9 +63,7 @@ int main(int argc, const char **argv)
         //return str;
 
 //        if (mapper_condition.empty())
-//        {
 //            mapper_condition = str;
-//        }
 //        else
 //        {
 //            auto res = mismatch(mapper_condition.begin(), mapper_condition.end(), str.begin());
@@ -86,8 +84,6 @@ int main(int argc, const char **argv)
     size_t reducer_condition_max = 0;
     mr_type reducer = [reducer_condition, reducer_condition_max] (const string &str) mutable -> vector<string>
     {
-       // return vector<string>(1, str);
-
         if (reducer_condition.empty())
         {
             reducer_condition = str;

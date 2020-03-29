@@ -76,7 +76,7 @@ void Yamr::Split()
 }
 //--------------------------------------------------------------
 
-void Yamr::Map(/*const*/ mr_type &mapper) // нужен ли const?
+void Yamr::Map(const mr_type &mapper)
 {
     vector<thread*> ts;
     ts.reserve(M);
@@ -177,7 +177,7 @@ void Yamr::Map(/*const*/ mr_type &mapper) // нужен ли const?
 }
 //--------------------------------------------------------------
 
-void Yamr::Reduce(/*const*/ mr_type &reducer) // нужен ли const?
+void Yamr::Reduce(const mr_type &reducer) // нужен ли const?
 {
     vector<thread*> ts;
     ts.reserve(R);
@@ -254,8 +254,7 @@ void Yamr::Reduce(/*const*/ mr_type &reducer) // нужен ли const?
     {
         ts.emplace_back( new thread( [reducer, i, &reduce_data /*&m, &in_fs, &indexes, &all_data*/]()
         {
-
-            //vector<string> candidates; // ведь у каждого потока будет своя копия вектора?
+            //vector<string> candidates;
             //candidates.reserve(M);
 
             ofstream f("reducing_res_" + to_string(i) + ".txt");
