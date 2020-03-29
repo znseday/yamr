@@ -55,7 +55,7 @@ int main(int argc, const char **argv)
         vector<string> res;
         res.reserve(str.length());
 
-        for (size_t i = 1; i < str.length(); ++i)
+        for (size_t i = 1; i <= str.length(); ++i)
             res.emplace_back(str.substr(0,i));
 
         return res;

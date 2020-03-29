@@ -217,24 +217,42 @@ void Yamr::Reduce(/*const*/ mr_type &reducer) // нужен ли const?
         f_test.close();
     )
 
-    size_t count = all_data.size();
-    vector<size_t> indexes(R+1);
-    size_t block_size = count/R;
-    indexes[0] = 0;
-    for (size_t i = 1; i < R; ++i)
+        // просто нарезка на примерно равные части
+//    size_t count = all_data.size();
+//    vector<size_t> indexes(R+1);
+//    size_t block_size = count/R;
+//    indexes[0] = 0;
+//    for (size_t i = 1; i < R; ++i)
+//    {
+//        indexes[i] = i*block_size + 1;
+//    }
+//    indexes[R] = count;
+//
+//    MY_DEBUG_ONLY(
+//        for (auto ind : indexes)
+//            cout << "ind = " << ind << endl;
+//    )
+
+    vector<vector<string>> reduce_data(R);
+
+    for (const auto &s : all_data)
     {
-        indexes[i] = i*block_size + 1;
+         reduce_data[ hash<string>{}(s) % R ].emplace_back(move(s));
     }
-    indexes[R] = count;
 
     MY_DEBUG_ONLY(
-        for (auto ind : indexes)
-            cout << "ind = " << ind << endl;
+        for (const auto &v : reduce_data)
+        {
+            cout << endl;
+            for (const auto &s : v)
+                cout << s << endl;
+            cout << endl;
+        }
     )
 
     for (size_t i = 0; i < R; i++)
     {
-        ts.emplace_back( new thread( [reducer, i, /*&m, &in_fs,*/ &indexes, &all_data]()
+        ts.emplace_back( new thread( [reducer, i, &reduce_data /*&m, &in_fs, &indexes, &all_data*/]()
         {
 
             //vector<string> candidates; // ведь у каждого потока будет своя копия вектора?
@@ -242,12 +260,21 @@ void Yamr::Reduce(/*const*/ mr_type &reducer) // нужен ли const?
 
             ofstream f("reducing_res_" + to_string(i) + ".txt");
 
-            for (size_t j = indexes[i]; j < indexes[i+1]; ++j)
+
+            for (const auto &s : reduce_data[i])
             {
-                auto res = reducer(all_data[j]);
-                for (const auto &s : res)
-                    f << s << endl;
+                auto res = reducer(s);
+                for (const auto &s_ : res)
+                    f << s_ << endl;
             }
+
+
+//            for (size_t j = indexes[i]; j < indexes[i+1]; ++j)
+//            {
+//                auto res = reducer(all_data[j]);
+//                for (const auto &s : res)
+//                    f << s << endl;
+//            }
 
 //            m.lock();
 //            for (size_t j = 0; j < M; j++)
