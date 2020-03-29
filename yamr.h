@@ -31,44 +31,10 @@ extern bool IsDebugOutput;
 
 //-----------------------------------------------
 
-//class Reducer
-//{
-//private:
-//    static size_t Number; // = 0;
-//    size_t n;
-//    std::vector<std::string> Res;
-
-//public:
-//    Reducer()
-//    {
-//        n = ++Number;
-//    }
-
-//    void operator()(const std::string &s)
-//    {
-//        Res.emplace_back(s);
-//    }
-
-//    ~Reducer()
-//    {
-//        std::stringstream ss;
-//        ss << n << ".txt";
-//        std::ofstream f(ss.str());
-//        for (const auto &s : Res)
-//            f << s << std::endl;
-//        f.close();
-//    }
-//};
-
 
 //using reducer_type = decltype([](const std::string &)->std::vector<std::string>{return std::vector<std::string>{};});
 
-using mr_type = std::function<std::vector<std::string>(const std::string &)>; // оригинал
-//using mr_type = std::function<std::string(const std::string &)>;
-
-using m_type = std::function<std::string(const std::string &)>;
-using r_type = std::function<std::string(const std::string &)>;
-//using r_type = std::function<std::string(std::vector<std::string>)>;
+using mr_type = std::function<std::vector<std::string>(const std::string &)>;
 
 class Yamr
 {
@@ -81,10 +47,6 @@ private:
 
     std::vector<std::size_t> SectionsInfo;
 
-    std::vector<std::vector<std::string>> SectionsData;
-
-    std::vector<std::vector<std::string>> DataForReducers;
-
     std::atomic_size_t FileNumber = 0;
 
 public:
@@ -92,9 +54,9 @@ public:
 
     void Split();
 
-    void Map(const mr_type &); // нужен ли const?
+    void Map(const mr_type &);
 
-    void Reduce(const mr_type &); // нужен ли const?
+    void Reduce(const mr_type &);
 };
 
 

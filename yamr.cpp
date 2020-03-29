@@ -94,7 +94,6 @@ void Yamr::Map(const mr_type &mapper)
 
     for (size_t i = 0; i < M; i++)
     {
-        // делаем у каждого потока свою копию маппера, чnобы у каждого было свое независимое состояние
         ts.emplace_back( new thread( [&m, i, &f, &SectionsDataTemp, mapper, this](size_t start, size_t end)
         {
             m.lock();

@@ -44,7 +44,6 @@ int main(int argc, const char **argv)
     MY_DEBUG_ONLY(cout << "Splitting's done" << endl;)
 
 //    string mapper_condition;
-
 //    mr_type mapper = [mapper_condition](const string &str) -> vector<string>
 //    {
 //       return vector<string>(1, str); // этот маппер пока просто заглушка - возвращает вектор из одной строки - исходной строки
