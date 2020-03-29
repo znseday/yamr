@@ -83,38 +83,38 @@ int main(int argc, const char **argv)
     MY_DEBUG_ONLY(cout << "Mapping's done" << endl;)
 
     string reducer_condition;
-    mr_type reducer = [reducer_condition] (const string &str) mutable -> vector<string>
+    size_t reducer_condition_max = 0;
+    mr_type reducer = [reducer_condition, reducer_condition_max] (const string &str) mutable -> vector<string>
     {
-        return vector<string>(1, str);
-
+       // return vector<string>(1, str);
 
         if (reducer_condition.empty())
         {
             reducer_condition = str;
             return vector<string>();
+//            return vector<string>(1, str);
         }
         else
         {
             if (str == reducer_condition)
             {
-                return vector<string>();
+                size_t len = str.length();
+                if (len > reducer_condition_max)
+                {
+                    reducer_condition_max = len;
+                    return vector<string>(1, to_string(reducer_condition_max));
+                }
+                else
+                    return vector<string>();
             }
             else
             {
-                return vector<string>(1, str);
+                reducer_condition = str;
+                return vector<string>();
+                //return vector<string>(1, str);
             }
         }
 
-
-//        if (v.empty())
-//        {
-//            return string();
-//        }
-//        else
-//        {
-//            auto it = min_element(v.begin(), v.end());
-//            return *it;
-//        }
     };
 
     yamr.Reduce(reducer);
