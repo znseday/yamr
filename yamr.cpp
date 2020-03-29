@@ -234,7 +234,7 @@ void Yamr::Reduce(/*const*/ mr_type &reducer) // нужен ли const?
 
     for (size_t i = 0; i < R; i++)
     {
-        ts.emplace_back( new thread( [reducer, i, &m, &in_fs, &indexes, &all_data, this]()
+        ts.emplace_back( new thread( [reducer, i, /*&m, &in_fs,*/ &indexes, &all_data]()
         {
 
             //vector<string> candidates; // ведь у каждого потока будет своя копия вектора?

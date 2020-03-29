@@ -102,7 +102,7 @@ int main(int argc, const char **argv)
                 if (len > reducer_condition_max)
                 {
                     reducer_condition_max = len;
-                    return vector<string>(1, to_string(reducer_condition_max));
+                    return vector<string>(1, to_string(reducer_condition_max+1));
                 }
                 else
                     return vector<string>();
