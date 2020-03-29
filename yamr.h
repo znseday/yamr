@@ -67,7 +67,8 @@ extern bool IsDebugOutput;
 //using mr_type = std::function<std::string(const std::string &)>;
 
 using m_type = std::function<std::string(const std::string &)>;
-using r_type = std::function<std::string(std::vector<std::string>)>;
+using r_type = std::function<std::string(const std::string &)>;
+//using r_type = std::function<std::string(std::vector<std::string>)>;
 
 class Yamr
 {

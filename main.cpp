@@ -78,17 +78,18 @@ int main(int argc, const char **argv)
     MY_DEBUG_ONLY(cout << "Mapping's done" << endl;)
 
 
-    r_type reducer = [] (vector<string> v) mutable -> string
+    r_type reducer = [] (string v) mutable -> string
     {
-        if (v.empty())
-        {
-            return string();
-        }
-        else
-        {
-            auto it = min_element(v.begin(), v.end());
-            return *it;
-        }
+        return v;
+//        if (v.empty())
+//        {
+//            return string();
+//        }
+//        else
+//        {
+//            auto it = min_element(v.begin(), v.end());
+//            return *it;
+//        }
     };
 
     yamr.Reduce(reducer);

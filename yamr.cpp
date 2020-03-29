@@ -205,7 +205,18 @@ void Yamr::Reduce(/*const*/ r_type &reducer) // нужен ли const?
 
             m.unlock();
 
-            f << reducer(move(candidates)) << endl;
+            string tt;
+            if (candidates.empty())
+            {
+                tt = string();
+            }
+            else
+            {
+                auto it = min_element(candidates.begin(), candidates.end());
+                tt = *it;
+            }
+
+            f << reducer(tt) << endl;
 
 //            for (auto data : DataForReducers)
 //            {
