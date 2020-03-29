@@ -78,7 +78,7 @@ int main(int argc, const char **argv)
     MY_DEBUG_ONLY(cout << "Mapping's done" << endl;)
 
 
-    r_type reducer = [mapper_condition] (vector<string> v) mutable -> string
+    r_type reducer = [] (vector<string> v) mutable -> string
     {
         if (v.empty())
         {
