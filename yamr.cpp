@@ -76,7 +76,7 @@ void Yamr::Split()
 }
 //--------------------------------------------------------------
 
-void Yamr::Map(/*const*/ m_type &mapper) // нужен ли const?
+void Yamr::Map(/*const*/ mr_type &mapper) // нужен ли const?
 {
     vector<thread*> ts;
     ts.reserve(M);
@@ -121,6 +121,7 @@ void Yamr::Map(/*const*/ m_type &mapper) // нужен ли const?
             m.unlock();
 
             vector<string> mapping_res;
+            vector<string> mapping_res_all;
 
             //ofstream f("mapping_res_" + to_string(i) + ".txt");
 
@@ -129,7 +130,10 @@ void Yamr::Map(/*const*/ m_type &mapper) // нужен ли const?
 
 //                f << mapper(s) << endl;
 
-                mapping_res.emplace_back(mapper(s));
+                mapping_res = mapper(s);
+
+                for (const auto &v : mapping_res)
+                    mapping_res_all.emplace_back(v);
 
 //                vector<string> res = mapper(s);
 
@@ -140,10 +144,11 @@ void Yamr::Map(/*const*/ m_type &mapper) // нужен ли const?
 //                             )
             }
 
-            sort(mapping_res.begin(), mapping_res.end());
+//            sort(mapping_res_all.begin(), mapping_res_all.end(), greater<>());
+            sort(mapping_res_all.begin(), mapping_res_all.end());
 
             ofstream f("mapping_res_" + to_string(i) + ".txt");
-            for (const auto &s : mapping_res)
+            for (const auto &s : mapping_res_all)
                 f << s << endl;
 
             f.close();
@@ -172,51 +177,97 @@ void Yamr::Map(/*const*/ m_type &mapper) // нужен ли const?
 }
 //--------------------------------------------------------------
 
-void Yamr::Reduce(/*const*/ r_type &reducer) // нужен ли const?
+void Yamr::Reduce(/*const*/ mr_type &reducer) // нужен ли const?
 {
     vector<thread*> ts;
     ts.reserve(R);
 
     mutex m;
 
+    vector<vector<string>> map_data(M);
+
     vector<ifstream> in_fs(M);
     for (size_t i = 0; i < M; i++)
     {
         in_fs[i].open("mapping_res_" + to_string(i) + ".txt");
+
+        string line;
+        while ( getline(in_fs[i], line) )
+            map_data[i].emplace_back(line);
     }
+
+    vector<string> all_data;
+    vector<string> tv = map_data[0];
+    for (size_t i = 1; i < M; i++)
+    {
+        all_data.clear();
+        merge(tv.begin(), tv.end(), map_data[i].begin(), map_data[i].end(), std::back_inserter(all_data));
+        tv = all_data;
+        //merge(all_data.begin(), all_data.end(), map_data[i].begin(), map_data[i].end(), all_data.end());
+    }
+
+    MY_DEBUG_ONLY(
+        ofstream f_test("all_data.txt");
+        for (const auto &s : all_data)
+            f_test << s << endl;
+        f_test.close();
+    )
+
+    size_t count = all_data.size();
+    vector<size_t> indexes(R+1);
+    size_t block_size = count/R;
+    indexes[0] = 0;
+    for (size_t i = 1; i < R; ++i)
+    {
+        indexes[i] = i*block_size + 1;
+    }
+    indexes[R] = count;
+
+    MY_DEBUG_ONLY(
+        for (auto ind : indexes)
+            cout << "ind = " << ind << endl;
+    )
 
     for (size_t i = 0; i < R; i++)
     {
-        ts.emplace_back( new thread( [reducer, i, &m, &in_fs, this]()
+        ts.emplace_back( new thread( [reducer, i, &m, &in_fs, &indexes, &all_data, this]()
         {
-            vector<string> candidates; // ведь у каждого потока будет своя копия вектора?
-            candidates.reserve(M);
+
+            //vector<string> candidates; // ведь у каждого потока будет своя копия вектора?
+            //candidates.reserve(M);
 
             ofstream f("reducing_res_" + to_string(i) + ".txt");
 
-            m.lock();
-
-            for (size_t j = 0; j < M; j++)
+            for (size_t j = indexes[i]; j < indexes[i+1]; ++j)
             {
-                string line;
-                if ( getline(in_fs[j], line) )
-                    candidates.emplace_back(move(line));
+                auto res = reducer(all_data[j]);
+                for (const auto &s : res)
+                    f << s << endl;
             }
 
-            m.unlock();
+//            m.lock();
+//            for (size_t j = 0; j < M; j++)
+//            {
+//                string line;
+//                if ( getline(in_fs[j], line) )
+//                    candidates.emplace_back(move(line));
+//            }
+//            m.unlock();
 
-            string tt;
-            if (candidates.empty())
-            {
-                tt = string();
-            }
-            else
-            {
-                auto it = min_element(candidates.begin(), candidates.end());
-                tt = *it;
-            }
+//            string tt;
+//            if (candidates.empty())
+//            {
+//                tt = string();
+//            }
+//            else
+//            {
+//                auto it = min_element(candidates.begin(), candidates.end());
+//                tt = *it;
+//            }
 
-            f << reducer(tt) << endl;
+//            auto res = reducer("qwerty");
+//            for (const auto &s : res)
+//                f << s << endl;
 
 //            for (auto data : DataForReducers)
 //            {

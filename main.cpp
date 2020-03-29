@@ -47,40 +47,65 @@ int main(int argc, const char **argv)
 
 //    mr_type mapper = [mapper_condition](const string &str) -> vector<string>
 //    {
-//        vector<string> res;
-//        res.emplace_back(str);
-//        return res; // этот маппер пока просто заглушка - возвращает вектор из одной строки - исходной строки
+//       return vector<string>(1, str); // этот маппер пока просто заглушка - возвращает вектор из одной строки - исходной строки
 //    };
 
-    m_type mapper = [mapper_condition] (const string &str) mutable -> string
+    mr_type mapper = [mapper_condition] (const string &str) mutable -> vector<string>
     {
-        if (str.empty())
-            return mapper_condition;
+        vector<string> res;
+        res.reserve(str.length());
 
-        if (mapper_condition.empty())
-        {
-            mapper_condition = str;
-        }
-        else
-        {
-            auto res = mismatch(mapper_condition.begin(), mapper_condition.end(), str.begin());
+        for (size_t i = 1; i < str.length(); ++i)
+            res.emplace_back(str.substr(0,i));
 
-            //size_t p = str.
-            //mapper_condition = str.substr(0, )
-            mapper_condition.resize(distance(str.begin(), res.second));
-            copy(str.begin(), res.second, mapper_condition.begin());
-        }
+        return res;
 
-        return mapper_condition;
+        //return str;
+
+//        if (mapper_condition.empty())
+//        {
+//            mapper_condition = str;
+//        }
+//        else
+//        {
+//            auto res = mismatch(mapper_condition.begin(), mapper_condition.end(), str.begin());
+
+//            //size_t p = str.
+//            //mapper_condition = str.substr(0, )
+//            mapper_condition.resize(distance(str.begin(), res.second));
+//            copy(str.begin(), res.second, mapper_condition.begin());
+//        }
+
+//        return mapper_condition;
     };
 
     yamr.Map(mapper);
     MY_DEBUG_ONLY(cout << "Mapping's done" << endl;)
 
-
-    r_type reducer = [] (string v) mutable -> string
+    string reducer_condition;
+    mr_type reducer = [reducer_condition] (const string &str) mutable -> vector<string>
     {
-        return v;
+        return vector<string>(1, str);
+
+
+        if (reducer_condition.empty())
+        {
+            reducer_condition = str;
+            return vector<string>();
+        }
+        else
+        {
+            if (str == reducer_condition)
+            {
+                return vector<string>();
+            }
+            else
+            {
+                return vector<string>(1, str);
+            }
+        }
+
+
 //        if (v.empty())
 //        {
 //            return string();
