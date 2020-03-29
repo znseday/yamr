@@ -198,6 +198,7 @@ void Yamr::Reduce(/*const*/ mr_type &reducer) // нужен ли const?
 
     vector<string> all_data;
     vector<string> tv = map_data[0];
+
     for (size_t i = 1; i < M; i++)
     {
         all_data.clear();
@@ -205,6 +206,9 @@ void Yamr::Reduce(/*const*/ mr_type &reducer) // нужен ли const?
         tv = all_data;
         //merge(all_data.begin(), all_data.end(), map_data[i].begin(), map_data[i].end(), all_data.end());
     }
+
+    if (M == 1)
+        all_data = map_data[0];
 
     MY_DEBUG_ONLY(
         ofstream f_test("all_data.txt");
