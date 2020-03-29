@@ -13,8 +13,6 @@ using namespace std;
 
 bool IsDebugOutput = false;
 
-//size_t Reducer::Number = 0;
-
 Yamr::Yamr(const std::string _fn, int _M, int _R) : fn(_fn), M(_M), R(_R)  //, SectionsData(_M)
 {
     SectionsInfo.reserve(M);
@@ -78,7 +76,7 @@ void Yamr::Split()
 }
 //--------------------------------------------------------------
 
-void Yamr::Map(/*const*/ mr_type &mapper) // нужен ли const?
+void Yamr::Map(/*const*/ m_type &mapper) // нужен ли const?
 {
     vector<thread*> ts;
     ts.reserve(M);
@@ -96,7 +94,8 @@ void Yamr::Map(/*const*/ mr_type &mapper) // нужен ли const?
 
     for (size_t i = 0; i < M; i++)
     {
-        ts.emplace_back( new thread( [&m, i, &f, &SectionsDataTemp, &mapper, this](size_t start, size_t end)
+        // делаем у каждого потока свою копию маппера, чnобы у каждого было свое независимое состояние
+        ts.emplace_back( new thread( [&m, i, &f, &SectionsDataTemp, mapper, this](size_t start, size_t end)
         {
             m.lock();
             MY_DEBUG_ONLY( m_console.lock();  cout << "thread " << i << ": start: " << start << "   end: " << end << endl; m_console.unlock(); )
@@ -121,18 +120,33 @@ void Yamr::Map(/*const*/ mr_type &mapper) // нужен ли const?
 
             m.unlock();
 
+            vector<string> mapping_res;
+
+            //ofstream f("mapping_res_" + to_string(i) + ".txt");
+
             for (const auto &s : SectionsDataTemp[i])
             {
-                vector<string> res = mapper(s);
 
-                sort(res.begin(), res.end()); // is it ok to do like that in a thread /w mutex ???
+//                f << mapper(s) << endl;
 
-                MY_DEBUG_ONLY(
-                    for(const auto &s : res) {  m_console.lock(); cout << "Mapper [" << i << "] res: " << s << endl; m_console.unlock();}
-                             )
+                mapping_res.emplace_back(mapper(s));
+
+//                vector<string> res = mapper(s);
+
+//                sort(res.begin(), res.end()); // is it ok to do like that in a thread /w mutex ???
+
+//                MY_DEBUG_ONLY(
+//                    for(const auto &s : res) {  m_console.lock(); cout << "Mapper [" << i << "] res: " << s << endl; m_console.unlock();}
+//                             )
             }
 
-            //sort(SectionsDataTemp[i].begin(), SectionsDataTemp[i].end()); // is it ok to do like that in a thread ???
+            sort(mapping_res.begin(), mapping_res.end());
+
+            ofstream f("mapping_res_" + to_string(i) + ".txt");
+            for (const auto &s : mapping_res)
+                f << s << endl;
+
+            f.close();
 
         }, // end of lambda
         SectionsInfo[i], (i<M-1)?(SectionsInfo[i+1]):(fs-1)  // lambda params
@@ -158,122 +172,66 @@ void Yamr::Map(/*const*/ mr_type &mapper) // нужен ли const?
 }
 //--------------------------------------------------------------
 
-//void Yamr::Shuffle()
-//{
-//    DataForReducers.resize(R);
+void Yamr::Reduce(/*const*/ r_type &reducer) // нужен ли const?
+{
+    vector<thread*> ts;
+    ts.reserve(R);
 
-//    vector<size_t> pointers(M, 0);
-//    vector<string> curs(M);
+    mutex m;
 
-//    vector<string> results;
+    vector<ifstream> in_fs(M);
+    for (size_t i = 0; i < M; i++)
+    {
+        in_fs[i].open("mapping_res_" + to_string(i) + ".txt");
+    }
 
-//    //size_t nLines = 0;
-//    //for (const auto & sd : SectionsData)
-//    //    nLines += sd.size();
+    for (size_t i = 0; i < R; i++)
+    {
+        ts.emplace_back( new thread( [reducer, i, &m, &in_fs, this]()
+        {
+            vector<string> candidates; // ведь у каждого потока будет своя копия вектора?
+            candidates.reserve(M);
 
-//    bool isDone = false;
-//    do
-//    {
-//        for (size_t i = 0; i < M; i++)
-//            curs[i] = SectionsData[i][pointers[i]];
+            ofstream f("reducing_res_" + to_string(i) + ".txt");
 
-//        size_t iWorkBlock = min_element(curs.begin(), curs.end()) - curs.begin();
+            m.lock();
 
-//        results.push_back(SectionsData[iWorkBlock][pointers[iWorkBlock]]);
+            for (size_t j = 0; j < M; j++)
+            {
+                string line;
+                if ( getline(in_fs[j], line) )
+                    candidates.emplace_back(move(line));
+            }
 
-//        for (pointers[iWorkBlock]++; pointers[iWorkBlock] < SectionsData[iWorkBlock].size(); pointers[iWorkBlock]++)
-//        {
-//            if (SectionsData[iWorkBlock][pointers[iWorkBlock]] > curs[iWorkBlock])
-//            {
-//                for (size_t jBlock = 0; jBlock < M; jBlock++)
-//                {
-//                    if (jBlock == iWorkBlock)
-//                        continue;
+            m.unlock();
 
-//                    for (size_t h = pointers[jBlock]; h < SectionsData[jBlock].size(); h++)
-//                        if (SectionsData[jBlock][h] > curs[iWorkBlock])
-//                        {
-//                            pointers[jBlock] = h;
-//                            break;
-//                        }
-//                }
-
-//                break;
-//            }
-//        }
-
-//        isDone = true;
-//        for (size_t i = 0; i < M; i++)
-//        {
-//            if (pointers[i] < SectionsData[i].size()-1 )
-//            {
-//                isDone = false;
-//                break;
-//            }
-//        }
-
-//    } while (!isDone);
-
-//    MY_DEBUG_ONLY(
-//        cout << endl;
-//        for (const auto &s : results)
-//            cout << s << endl;
-//        cout << endl;
-//    )
-
-//    size_t R_BlockSize = results.size() / R + 1;
-//    for (size_t i = 0; i < results.size(); i++)
-//    {
-//        size_t j = i / R_BlockSize;
-//        DataForReducers[j].emplace_back(std::move(results[i]));
-//    }
-
-//    MY_DEBUG_ONLY(
-//        cout << endl;
-//        for (size_t i = 0; i < DataForReducers.size(); i++)
-//        {
-//            cout << "Data for reducer " << i << ":" << endl;
-//            for (const auto &s : DataForReducers[i])
-//                cout << s << endl;
-//        }
-//        cout << endl;
-//    )
-//}
-//--------------------------------------------------------------
-
-//void Yamr::Reduce(/*const*/ mr_type &reducer) // нужен ли const?
-//{
-//    vector<thread*> ts;
-//    ts.reserve(R);
-
-//    //mutex m;
-
-//    for (size_t i = 0; i < R; i++)
-//    {
-//        ts.emplace_back( new thread( [&reducer, this](const string &str)
-//        {
-//            ofstream f(to_string(FileNumber) + ".txt");
+            f << reducer(move(candidates)) << endl;
 
 //            for (auto data : DataForReducers)
 //            {
 //                // to do
-//                vector<string> res = reducer(str);
+//                auto res = reducer(str);
 //                // to do
 //            }
 
-//            f.close();
+            f.close();
 
-//        }  // end lambda
-//        )  // end thread
-//        ); // end emplace_back
-//    } // end for
+        }  // end lambda
+        )  // end thread
+        ); // end emplace_back
+    } // end for
 
-//    for (auto t : ts)
-//        t->join();
+    for (auto t : ts)
+        t->join();
 
-//    for (auto t : ts)
-//        delete t;
-//}
+    for (size_t i = 0; i < M; i++)
+    {
+        in_fs[i].close();
+    }
+
+    for (auto t : ts)
+        delete t;
+}
 //--------------------------------------------------------------
 
 

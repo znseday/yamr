@@ -63,7 +63,11 @@ extern bool IsDebugOutput;
 
 //using reducer_type = decltype([](const std::string &)->std::vector<std::string>{return std::vector<std::string>{};});
 
-using mr_type = std::function<std::vector<std::string>(const std::string &)>;
+//using mr_type = std::function<std::vector<std::string>(const std::string &)>;
+//using mr_type = std::function<std::string(const std::string &)>;
+
+using m_type = std::function<std::string(const std::string &)>;
+using r_type = std::function<std::string(std::vector<std::string>)>;
 
 class Yamr
 {
@@ -78,7 +82,7 @@ private:
 
     std::vector<std::vector<std::string>> SectionsData;
 
-    std::vector<std::vector<std::string>> DataForReducers;
+    //std::vector<std::vector<std::string>> DataForReducers;
 
     std::atomic_size_t FileNumber = 0;
 
@@ -87,11 +91,9 @@ public:
 
     void Split();
 
-    void Map(/*const*/ mr_type &); // нужен ли const?
+    void Map(/*const*/ m_type &); // нужен ли const?
 
-    //void Shuffle();
-
-    void Reduce(/*const*/ mr_type &); // нужен ли const?
+    void Reduce(/*const*/ r_type &); // нужен ли const?
 };
 
 

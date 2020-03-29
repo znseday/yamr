@@ -43,21 +43,56 @@ int main(int argc, const char **argv)
     yamr.Split();
     MY_DEBUG_ONLY(cout << "Splitting's done" << endl;)
 
-    mr_type mapper = [](const string &str) -> vector<string>
+    string mapper_condition;
+
+//    mr_type mapper = [mapper_condition](const string &str) -> vector<string>
+//    {
+//        vector<string> res;
+//        res.emplace_back(str);
+//        return res; // этот маппер пока просто заглушка - возвращает вектор из одной строки - исходной строки
+//    };
+
+    m_type mapper = [mapper_condition] (const string &str) mutable -> string
     {
-        vector<string> res;
-        res.emplace_back(str);
-        return res; // этот маппер пока просто заглушка - возвращает вектор из одной строки - исходной строки
+        if (str.empty())
+            return mapper_condition;
+
+        if (mapper_condition.empty())
+        {
+            mapper_condition = str;
+        }
+        else
+        {
+            auto res = mismatch(mapper_condition.begin(), mapper_condition.end(), str.begin());
+
+            //size_t p = str.
+            //mapper_condition = str.substr(0, )
+            mapper_condition.resize(distance(str.begin(), res.second));
+            copy(str.begin(), res.second, mapper_condition.begin());
+        }
+
+        return mapper_condition;
     };
 
     yamr.Map(mapper);
     MY_DEBUG_ONLY(cout << "Mapping's done" << endl;)
 
-    //yamr.Shuffle();
-    //MY_DEBUG_ONLY(cout << "Shuffling's done" << endl;)
 
-    //yamr.Reduce();
-   //MY_DEBUG_ONLY(cout << "Reducing's done" << endl;)
+    r_type reducer = [mapper_condition] (vector<string> v) mutable -> string
+    {
+        if (v.empty())
+        {
+            return string();
+        }
+        else
+        {
+            auto it = min_element(v.begin(), v.end());
+            return *it;
+        }
+    };
+
+    yamr.Reduce(reducer);
+    MY_DEBUG_ONLY(cout << "Reducing's done" << endl;)
 
     cout << "Done." << endl;
     return 0;
